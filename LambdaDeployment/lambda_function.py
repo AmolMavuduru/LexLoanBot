@@ -1,7 +1,7 @@
-#import numpy as np
-#import pandas as pd 
-#from sklearn.preprocessing import LabelEncoder
-#from sklearn.externals import joblib 
+import pandas as pd 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.externals import joblib 
 
 def convert_to_label(term):
 
@@ -26,17 +26,22 @@ def lambda_handler(event, context):
 	int_rate = 13.25
 	Term = convert_to_label(Term)
 
-    
-   	if NumDelinq > 3 and AnnualIncome < 13000:
-    	prediction = 'Not paid'
-   	elif DTI > 0.8 and AnnualIncome < 14000 and EmpLength < 5:
-    	prediction = 'Not paid'
-    elif !HomeOwn.contains('own') and !HomeOwn.contains('Own') and EmpLength < 3:
-        prediction = 'Not paid'
-    elif DTI > 1.3:
-        prediction = 'Not paid'
-    else:
-        prediction = 'Fully paid'
+	random_forest = joblib.load('rf.pkl')
+	lbl_dict = joblib.load('label_encoder.pkl')
+
+	data_input = pd.DataFrame({'addr_state':[State],
+                           'int_rate':[int_rate],
+                           'loan_amnt':[Amount],
+                           'annual_inc':[AnnualIncome],
+                           'term':[Term],
+                           'emp_length':[EmpLength],
+                           'home_ownership':[HomeOwn],
+                           'dti':[DTI],
+                           'open_acc':[OpenAcc]})
+	for col in lbl_dict.keys(): 
+		data_input[col] = lbl_dict[col].transform(data_input[col])
+
+	prediction = random_forest.predict(data_input)[0]
 
 	if(prediction == 'Fully Paid'):
 
